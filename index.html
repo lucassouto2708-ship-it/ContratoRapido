@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contratos — Cabo Eleitoral</title>
+<style>
+  :root{
+    --bg:#18181c;
+    --bg-alt:#111113;
+    --panel:#212126;
+    --panel-raised:#26262c;
+    --border:#34343c;
+    --border-soft:#2a2a30;
+    --text:#eceaea;
+    --muted:#9a97a0;
+    --muted-dim:#6f6c75;
+    --accent:#c68a46;
+    --accent-hover:#b57736;
+    --accent-soft:rgba(198,138,70,.14);
+    --ok:#5f9e72;
+    --ok-soft:rgba(95,158,114,.12);
+    --danger:#c96555;
+    --danger-soft:rgba(201,101,85,.12);
+    --radius:10px;
+    --font: -apple-system, "Segoe UI", "Inter", Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scrollbar-color: var(--border) transparent;}
+  body{
+    font-family:var(--font); background:var(--bg); color:var(--text);
+    margin:0; padding:40px 20px 90px; line-height:1.5;
+  }
+  .container{max-width:860px; margin:0 auto;}
+
+  header.topo{margin-bottom:30px;}
+  .kicker{
+    text-transform:uppercase; letter-spacing:.12em; font-size:.68rem;
+    color:var(--muted-dim); font-weight:600; margin:0 0 6px;
+  }
+  h1{font-size:1.5rem; margin:0 0 8px; font-weight:650; letter-spacing:-.01em;}
+  .sub{color:var(--muted); font-size:.88rem; max-width:60ch;}
+
+  .secao-titulo{
+    display:flex; align-items:baseline; gap:8px; margin:34px 0 12px;
+  }
+  .secao-titulo .num{
+    font-size:.72rem; color:var(--muted-dim); font-weight:700;
+    border:1px solid var(--border); border-radius:999px; width:19px; height:19px;
+    display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .secao-titulo h2{font-size:.92rem; margin:0; font-weight:600; color:var(--text);}
+  .secao-titulo .opcional{color:var(--muted-dim); font-size:.76rem; font-weight:400;}
+
+  .planilha-box{
+    background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius);
+    padding:16px 18px; display:flex; align-items:center; justify-content:space-between;
+    gap:16px; flex-wrap:wrap;
+  }
+  .planilha-box .info{font-size:.82rem; color:var(--muted); max-width:480px;}
+  .planilha-box .info b{color:var(--text); font-weight:600;}
+  .planilha-acoes{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  input[type=file]{display:none;}
+
+  .divisor{
+    display:flex; align-items:center; gap:10px; color:var(--muted-dim);
+    font-size:.74rem; margin:26px 0 18px; text-transform:uppercase; letter-spacing:.08em;
+  }
+  .divisor::before, .divisor::after{content:""; flex:1; height:1px; background:var(--border-soft);}
+
+  details.contrato{
+    background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius);
+    margin-bottom:12px; overflow:hidden;
+  }
+  details.contrato[open]{border-color:var(--border);}
+  details.contrato summary{
+    list-style:none; cursor:pointer; padding:14px 18px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    user-select:none;
+  }
+  details.contrato summary::-webkit-details-marker{display:none;}
+  .resumo-esq{display:flex; align-items:center; gap:10px; min-width:0;}
+  .chevron{
+    color:var(--muted-dim); font-size:.7rem; transition:transform .15s ease; flex-shrink:0;
+  }
+  details[open] .chevron{transform:rotate(90deg);}
+  .resumo-nome{font-size:.9rem; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .resumo-nome.vazio{color:var(--muted-dim); font-weight:400; font-style:italic;}
+  .resumo-badge{
+    font-size:.68rem; color:var(--muted-dim); border:1px solid var(--border);
+    border-radius:999px; padding:1px 8px; flex-shrink:0;
+  }
+  .btn-remover{
+    background:none; border:none; color:var(--muted-dim); cursor:pointer;
+    font-size:1.1rem; line-height:1; padding:4px 6px; border-radius:6px; flex-shrink:0;
+  }
+  .btn-remover:hover{color:var(--danger); background:var(--danger-soft);}
+
+  .contrato-corpo{padding:4px 18px 20px; border-top:1px solid var(--border-soft);}
+  .grid{display:grid; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); gap:14px; margin-top:16px;}
+  .campo label{display:block; font-size:.76rem; color:var(--muted); margin-bottom:5px;}
+  input[type=text], input[type=number], input[type=date], input[type=time]{
+    width:100%; padding:9px 11px; border-radius:7px; border:1px solid var(--border);
+    background:var(--bg-alt); color:var(--text); font-size:.87rem; font-family:var(--font);
+    transition:border-color .12s ease, box-shadow .12s ease;
+  }
+  input::placeholder{color:var(--muted-dim);}
+  input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);}
+  .full{grid-column:1/-1;}
+
+  .subcampo-titulo{font-size:.76rem; color:var(--muted); margin-bottom:6px;}
+  .subgrid{display:grid; grid-template-columns: repeat(auto-fit, minmax(110px,1fr)); gap:10px;}
+  label.mini{display:block; font-size:.68rem; color:var(--muted-dim); margin-bottom:4px;}
+
+  .radios{display:flex; gap:6px; padding-top:2px;}
+  .radios label{
+    display:flex; align-items:center; gap:6px; color:var(--muted); font-size:.83rem;
+    border:1px solid var(--border); border-radius:7px; padding:8px 12px; cursor:pointer;
+    flex:1; justify-content:center; transition:all .12s ease;
+  }
+  .radios input{accent-color:var(--accent); margin:0;}
+  .radios label:has(input:checked){border-color:var(--accent); color:var(--text); background:var(--accent-soft);}
+
+  .barra{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; align-items:center;}
+  .acao{
+    background:var(--accent); color:#1a1408; border:none; border-radius:8px;
+    padding:11px 20px; font-size:.87rem; font-weight:600; cursor:pointer;
+    transition:background .12s ease, border-color .12s ease, color .12s ease, transform .06s ease;
+  }
+  .acao:hover{background:var(--accent-hover);}
+  .acao:active{transform:scale(.98);}
+  .acao:disabled{background:var(--border); color:var(--muted-dim); cursor:not-allowed;}
+  .acao.secundaria{
+    background:var(--panel-raised); border:1px solid var(--border); color:var(--text);
+  }
+  .acao.secundaria:hover{border-color:var(--accent); color:var(--accent); background:var(--panel-raised);}
+  a.acao{text-decoration:none; display:inline-flex; align-items:center;}
+
+  .spinner{
+    width:13px; height:13px; border-radius:50%; border:2px solid rgba(255,255,255,.35);
+    border-top-color:#1a1408; animation:girar .7s linear infinite; display:inline-block;
+    vertical-align:-2px; margin-right:7px;
+  }
+  @keyframes girar{to{transform:rotate(360deg);}}
+
+  #aviso-area, #resultado-area{max-width:860px; margin-top:16px;}
+  .alerta{
+    display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:8px;
+    font-size:.85rem; border:1px solid; animation:entra .18s ease;
+  }
+  .alerta.erro{background:var(--danger-soft); border-color:rgba(201,101,85,.35); color:#e8b3aa;}
+  .alerta .marca{font-weight:700; flex-shrink:0;}
+
+  .loading-box{
+    display:flex; align-items:center; padding:14px 16px; border-radius:8px;
+    background:var(--panel); border:1px solid var(--border-soft); font-size:.86rem; color:var(--muted);
+  }
+
+  .resultado-header{
+    display:flex; align-items:center; gap:8px; font-size:.85rem; color:var(--muted);
+    margin-bottom:10px; padding-left:2px;
+  }
+  .resultado-header .ponto{width:7px; height:7px; border-radius:50%; background:var(--ok); flex-shrink:0;}
+  .resultado-header.com-erro .ponto{background:var(--danger);}
+
+  .card-resultado{
+    background:var(--panel); border:1px solid var(--border-soft); border-left:3px solid var(--ok);
+    border-radius:8px; padding:12px 16px; margin-bottom:8px;
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    animation:entra .25s ease both;
+  }
+  .card-resultado.falhou{border-left-color:var(--danger);}
+  .card-resultado .nome{font-size:.87rem; font-weight:500;}
+  .card-resultado .status{font-size:.78rem; color:var(--muted); text-align:right;}
+  .card-resultado .status.erro{color:#e8b3aa;}
+  @keyframes entra{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+  .empty-state{
+    text-align:center; padding:34px 20px; border:1px dashed var(--border);
+    border-radius:var(--radius); color:var(--muted); font-size:.87rem;
+  }
+  .empty-state button{margin-top:10px;}
+
+  .aviso-pdf{
+    background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius);
+    padding:12px 16px; font-size:.8rem; color:var(--muted); margin-top:26px;
+  }
+
+  footer.rodape{
+    max-width:860px; margin:44px auto 0; padding-top:16px; border-top:1px solid var(--border-soft);
+    font-size:.76rem; color:var(--muted-dim);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="topo">
+  <p class="kicker">Ferramenta interna — roda 100% no navegador</p>
+  <h1>Geração de contratos — cabo eleitoral</h1>
+  <p class="sub">Preencha os dados de cada contratado. O Word é gerado e baixado automaticamente, nomeado como "Nome — Data da assinatura". Nada é enviado para nenhum servidor: tudo acontece no seu navegador.</p>
+</header>
+
+<div class="secao-titulo">
+  <span class="num">1</span>
+  <h2>Preencher em massa</h2>
+  <span class="opcional">— opcional, via planilha</span>
+</div>
+<div class="planilha-box">
+  <div class="info">
+    <b>Baixe o modelo, preencha uma linha por contrato</b> e envie o arquivo de volta para gerar todos de uma vez.
+  </div>
+  <div class="planilha-acoes">
+    <button type="button" class="acao secundaria" onclick="baixarModeloPlanilha()">Baixar modelo</button>
+    <label class="acao" style="cursor:pointer;">
+      Enviar planilha
+      <input type="file" id="input-planilha" accept=".xlsx" onchange="enviarPlanilha(this.files[0])">
+    </label>
+  </div>
+</div>
+
+<div class="divisor">ou um por um</div>
+
+<div class="secao-titulo">
+  <span class="num">2</span>
+  <h2>Preenchimento manual</h2>
+</div>
+
+<div id="lista"></div>
+<div id="empty-state" style="display:none;" class="empty-state">
+  Nenhum contrato na lista.
+  <div><button type="button" class="acao secundaria" onclick="adicionarContrato()">+ Adicionar contrato</button></div>
+</div>
+
+<div class="barra">
+  <button type="button" class="acao secundaria" onclick="adicionarContrato()">+ Adicionar contrato</button>
+  <button type="button" class="acao" id="btn-gerar" onclick="gerarContratos()">Gerar Word</button>
+</div>
+
+<div id="aviso-area"></div>
+<div id="resultado-area"></div>
+
+<div class="aviso-pdf">
+  Precisa em PDF? Abra o arquivo Word gerado e use "Arquivo → Salvar como → PDF" (ou "Exportar para PDF" no Google Docs/LibreOffice).
+</div>
+
+<footer class="rodape">
+  Este painel roda inteiramente no seu navegador — nenhum dado é enviado a servidores externos.
+</footer>
+
+</div>
+
+<template id="tpl-contrato">
+  <details class="contrato" open>
+    <summary onclick="event.stopPropagation() || undefined">
+      <div class="resumo-esq">
+        <span class="chevron">▶</span>
+        <span class="resumo-badge indice"></span>
+        <span class="resumo-nome vazio nome-preview">sem nome ainda</span>
+      </div>
+      <button type="button" class="btn-remover" title="Remover contrato" onclick="event.preventDefault(); event.stopPropagation(); removerContrato(this);">✕</button>
+    </summary>
+    <div class="contrato-corpo">
+      <div class="grid">
+        <div class="campo">
+          <label>Nome completo do(a) contratado(a)</label>
+          <input type="text" class="nome" placeholder="Ex: Maria Aparecida Souza">
+        </div>
+        <div class="campo">
+          <label>Local de prestação do serviço</label>
+          <input type="text" class="local_prestacao" placeholder="Ex: Governador Valadares">
+        </div>
+        <div class="campo">
+          <label>CPF</label>
+          <input type="text" class="cpf" placeholder="Ex: 123.456.789-00">
+        </div>
+        <div class="campo">
+          <label>RG</label>
+          <input type="text" class="rg" placeholder="Ex: MG-12.345.678">
+        </div>
+        <div class="campo">
+          <label>Título de eleitor</label>
+          <input type="text" class="titulo_eleitor" placeholder="Ex: 123456789012">
+        </div>
+        <div class="full campo">
+          <label>Endereço do contratado</label>
+          <input type="text" class="endereco_contratado" placeholder="Ex: Rua Exemplo, 100, Centro, Governador Valadares/MG">
+        </div>
+        <div class="campo">
+          <label>Data da assinatura</label>
+          <input type="date" class="data_assinatura">
+        </div>
+        <div class="campo">
+          <label>Valor (R$)</label>
+          <input type="text" class="valor" placeholder="Ex: 1500,00">
+        </div>
+        <div class="campo">
+          <label>Periodicidade do pagamento</label>
+          <div class="radios">
+            <label><input type="radio" name="periodicidade" class="p-diario" value="diario"> Diário</label>
+            <label><input type="radio" name="periodicidade" class="p-semanal" value="semanal"> Semanal</label>
+            <label><input type="radio" name="periodicidade" class="p-mensal" value="mensal" checked> Mensal</label>
+          </div>
+        </div>
+
+        <div class="full campo">
+          <div class="subcampo-titulo">Horário de segunda a sábado</div>
+          <div class="subgrid">
+            <div>
+              <label class="mini">Entrada</label>
+              <input type="time" class="sem_entrada">
+            </div>
+            <div>
+              <label class="mini">Saída</label>
+              <input type="time" class="sem_saida">
+            </div>
+            <div>
+              <label class="mini">Intervalo (horas)</label>
+              <input type="text" class="sem_intervalo" placeholder="Ex: 1">
+            </div>
+          </div>
+        </div>
+        <div class="full campo">
+          <div class="subcampo-titulo">Horário de fim de semana / feriado</div>
+          <div class="subgrid">
+            <div>
+              <label class="mini">Dias</label>
+              <input type="text" class="fds_dias" placeholder="Ex: sábados">
+            </div>
+            <div>
+              <label class="mini">Entrada</label>
+              <input type="time" class="fds_entrada">
+            </div>
+            <div>
+              <label class="mini">Saída</label>
+              <input type="time" class="fds_saida">
+            </div>
+            <div>
+              <label class="mini">Total de horas</label>
+              <input type="text" class="fds_horas" placeholder="Ex: 6">
+            </div>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label>Chave PIX</label>
+          <input type="text" class="chave_pix">
+        </div>
+        <div class="campo">
+          <label>Banco</label>
+          <input type="text" class="banco">
+        </div>
+        <div class="campo">
+          <label>Agência</label>
+          <input type="text" class="agencia">
+        </div>
+        <div class="campo">
+          <label>Conta corrente</label>
+          <input type="text" class="conta_corrente">
+        </div>
+        <div class="full campo">
+          <label>Titular da conta</label>
+          <input type="text" class="titular_conta">
+        </div>
+      </div>
+    </div>
+  </details>
+</template>
+
+<script src="libs/pizzip.min.js"></script>
+<script src="libs/docxtemplater.js"></script>
+<script src="libs/jszip.min.js"></script>
+<script src="libs/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
