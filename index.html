@@ -291,10 +291,6 @@
           <input type="date" class="data_assinatura">
         </div>
         <div class="campo">
-          <label>Vigência do contrato até</label>
-          <input type="date" class="data_fim">
-        </div>
-        <div class="campo">
           <label>Valor (R$)</label>
           <input type="text" class="valor" placeholder="Ex: 1500,00">
         </div>
@@ -305,6 +301,10 @@
             <label><input type="radio" name="periodicidade" class="p-semanal" value="semanal"> Semanal</label>
             <label><input type="radio" name="periodicidade" class="p-mensal" value="mensal" checked> Mensal</label>
           </div>
+          <label style="display:flex; align-items:center; gap:6px; margin-top:8px; font-size:.82rem; color:var(--muted); cursor:pointer;">
+            <input type="checkbox" class="periodo_campanha" style="accent-color:var(--accent); margin:0;">
+            Vigência: durante todo o período da campanha
+          </label>
         </div>
 
         <div class="full campo">
