@@ -408,6 +408,10 @@ function valorCelula(v) {
 
 function parseHoraCelula(v) {
   if (v === null || v === undefined || v === '') return '';
+  if (v instanceof Date) {
+    // célula de hora nativa do Excel: SheetJS converte para Date no horário local
+    return `${String(v.getHours()).padStart(2,'0')}:${String(v.getMinutes()).padStart(2,'0')}`;
+  }
   if (typeof v === 'number') {
     // fração do dia (formato hora nativo do Excel)
     const totalMin = Math.round(v * 24 * 60);
