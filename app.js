@@ -61,9 +61,6 @@ function formatarDataAssinatura(dataIso) {
   return `${String(dia).padStart(2, '0')} de ${MESES_PT[mes - 1]}`;
 }
 
-const DATA_FIM_PADRAO = '04.10.2026';
-const TEXTO_VIGENCIA_CAMPANHA = 'o encerramento do período da campanha eleitoral';
-
 function dataParaIso(valor) {
   if (valor instanceof Date) {
     return `${valor.getFullYear()}-${String(valor.getMonth() + 1).padStart(2, '0')}-${String(valor.getDate()).padStart(2, '0')}`;
@@ -89,7 +86,6 @@ function slugifyNomeArquivo(texto) {
 /* ---------- contexto do contrato (mesmas regras do painel anterior) ---------- */
 
 function montarContexto(c) {
-  const periodicidade = c.periodicidade || 'mensal';
   const isoData = dataParaIso(c.data_assinatura);
   return {
     contexto: {
@@ -99,18 +95,16 @@ function montarContexto(c) {
       rg: (c.rg || '').trim(),
       titulo_eleitor: (c.titulo_eleitor || '').trim(),
       endereco_contratado: (c.endereco_contratado || '').trim(),
+      hora_servico: (c.hora_servico || '').trim(),
       valor: (c.valor || '').trim(),
       valor_extenso: formatarValorExtenso(c.valor),
-      marca_diario: periodicidade === 'diario' ? 'X' : '',
-      marca_semanal: periodicidade === 'semanal' ? 'X' : '',
-      marca_mensal: periodicidade === 'mensal' ? 'X' : '',
       chave_pix: (c.chave_pix || '').trim(),
       banco: (c.banco || '').trim(),
       conta_corrente: (c.conta_corrente || '').trim(),
       agencia: (c.agencia || '').trim(),
       titular_conta: (c.titular_conta || '').trim(),
+      local_assinatura: (c.local_assinatura || '').trim(),
       data_assinatura: formatarDataAssinatura(isoData),
-      data_fim: c.periodo_campanha ? TEXTO_VIGENCIA_CAMPANHA : DATA_FIM_PADRAO,
     },
     dataIso: isoData,
   };
@@ -169,7 +163,6 @@ function adicionarContrato() {
   const tpl = document.getElementById('tpl-contrato');
   const clone = tpl.content.cloneNode(true);
   clone.querySelector('.indice').textContent = '#' + contador;
-  clone.querySelectorAll('input[type=radio]').forEach(r => r.name = 'periodicidade_' + contador);
 
   const nomeInput = clone.querySelector('.nome');
   const preview = clone.querySelector('.nome-preview');
@@ -193,7 +186,6 @@ function coletarDados() {
   const contratos = [];
   for (const b of blocos) {
     const get = (sel) => b.querySelector(sel).value.trim();
-    const periodicidade = b.querySelector('input[type=radio]:checked')?.value || 'mensal';
     contratos.push({
       nome: get('.nome'),
       local_prestacao: get('.local_prestacao'),
@@ -201,10 +193,10 @@ function coletarDados() {
       rg: get('.rg'),
       titulo_eleitor: get('.titulo_eleitor'),
       endereco_contratado: get('.endereco_contratado'),
+      hora_servico: get('.hora_servico'),
       data_assinatura: get('.data_assinatura'),
-      periodo_campanha: b.querySelector('.periodo_campanha').checked,
+      local_assinatura: get('.local_assinatura'),
       valor: get('.valor'),
-      periodicidade: periodicidade,
       chave_pix: get('.chave_pix'),
       banco: get('.banco'),
       agencia: get('.agencia'),
@@ -216,10 +208,11 @@ function coletarDados() {
 }
 
 function validar(contratos) {
-  const obrigatorios = ['nome','local_prestacao','cpf','rg','titulo_eleitor','endereco_contratado','data_assinatura','valor'];
+  const obrigatorios = ['nome','local_prestacao','cpf','rg','titulo_eleitor','endereco_contratado','hora_servico','data_assinatura','local_assinatura','valor'];
   const nomes = {
     local_prestacao: 'local de prestação do serviço', titulo_eleitor: 'título de eleitor',
-    endereco_contratado: 'endereço do contratado',
+    endereco_contratado: 'endereço do contratado', hora_servico: 'horário de serviço',
+    local_assinatura: 'local da assinatura',
   };
   for (const c of contratos) {
     for (const campo of obrigatorios) {
@@ -335,28 +328,29 @@ function baixarBlob(blob, nomeArquivo) {
 
 const CABECALHOS_PLANILHA = [
   'Nome completo do(a) contratado(a)', 'Local de prestação do serviço', 'CPF', 'RG',
-  'Título de eleitor', 'Endereço do contratado', 'Data da assinatura (DD/MM/AAAA)',
-  'Vigência = todo o período da campanha? (sim/não)',
-  'Valor (R$)', 'Periodicidade (diario, semanal ou mensal)',
+  'Título de eleitor', 'Endereço do contratado', 'Horário de serviço (ex: 08h00 às 13h00)',
+  'Data da assinatura (DD/MM/AAAA)', 'Local da assinatura',
+  'Valor (R$)',
   'Chave PIX', 'Banco', 'Agência', 'Conta corrente', 'Titular da conta',
 ];
 
 const LINHA_EXEMPLO = [
   'Maria Aparecida Souza', 'Governador Valadares', '123.456.789-00', 'MG-12.345.678',
   '123456789012', 'Rua Exemplo, 100, Centro, Governador Valadares/MG',
-  '06/08/2026', 'não', '1500,00', 'mensal',
+  '08h00 às 13h00',
+  '06/08/2026', 'Governador Valadares', '1500,00',
   '11122233344', 'Banco do Brasil', '1234', '12345-6', 'Maria Aparecida Souza',
 ];
 
 const COLUNAS_PLANILHA = [
-  'nome', 'local_prestacao', 'cpf', 'rg', 'titulo_eleitor', 'endereco_contratado',
-  'data_assinatura', 'periodo_campanha', 'valor', 'periodicidade',
+  'nome', 'local_prestacao', 'cpf', 'rg', 'titulo_eleitor', 'endereco_contratado', 'hora_servico',
+  'data_assinatura', 'local_assinatura', 'valor',
   'chave_pix', 'banco', 'agencia', 'conta_corrente', 'titular_conta',
 ];
 
 function baixarModeloPlanilha() {
   const ws = XLSX.utils.aoa_to_sheet([CABECALHOS_PLANILHA, LINHA_EXEMPLO]);
-  ws['!cols'] = [28, 22, 16, 16, 16, 30, 22, 22, 12, 26, 22, 20, 12, 16, 26].map(w => ({ wch: w }));
+  ws['!cols'] = [28, 22, 16, 16, 16, 30, 22, 22, 20, 12, 22, 20, 12, 16, 26].map(w => ({ wch: w }));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Contratos');
   XLSX.writeFile(wb, 'modelo_planilha_contratos.xlsx');
@@ -367,13 +361,6 @@ function baixarModeloPlanilha() {
 function valorCelula(v) {
   if (v === null || v === undefined) return '';
   return String(v).trim();
-}
-
-function normalizarPeriodicidade(v) {
-  const texto = String(v || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase();
-  if (texto.startsWith('diari')) return 'diario';
-  if (texto.startsWith('semanal')) return 'semanal';
-  return 'mensal';
 }
 
 function linhaParaContrato(valores) {
@@ -387,9 +374,6 @@ function linhaParaContrato(valores) {
     dataAssinatura = valorCelula(dados.data_assinatura);
   }
 
-  const periodoCampanhaTexto = String(dados.periodo_campanha || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
-  const periodoCampanha = ['sim', 's', 'x', 'true', '1'].includes(periodoCampanhaTexto);
-
   return {
     nome: valorCelula(dados.nome),
     local_prestacao: valorCelula(dados.local_prestacao),
@@ -397,10 +381,10 @@ function linhaParaContrato(valores) {
     rg: valorCelula(dados.rg),
     titulo_eleitor: valorCelula(dados.titulo_eleitor),
     endereco_contratado: valorCelula(dados.endereco_contratado),
+    hora_servico: valorCelula(dados.hora_servico),
     data_assinatura: dataAssinatura,
-    periodo_campanha: periodoCampanha,
+    local_assinatura: valorCelula(dados.local_assinatura),
     valor: valorCelula(dados.valor),
-    periodicidade: normalizarPeriodicidade(dados.periodicidade),
     chave_pix: valorCelula(dados.chave_pix),
     banco: valorCelula(dados.banco),
     agencia: valorCelula(dados.agencia),
