@@ -73,6 +73,24 @@ function dataParaIso(valor) {
   throw new Error(`data inválida: '${texto}' (use o formato DD/MM/AAAA)`);
 }
 
+/* ---------- máscara de valor em reais (separador de milhar) ---------- */
+
+function formatarMascaraValor(digitos) {
+  digitos = digitos.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+  if (!digitos) return '';
+  digitos = digitos.padStart(3, '0');
+  const centavos = digitos.slice(-2);
+  const inteiro = digitos.slice(0, -2);
+  const inteiroComPontos = inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return `${inteiroComPontos},${centavos}`;
+}
+
+function aplicarMascaraValor(input) {
+  input.addEventListener('input', () => {
+    input.value = formatarMascaraValor(input.value);
+  });
+}
+
 /* ---------- nome de arquivo ---------- */
 
 function slugifyNomeArquivo(texto) {
@@ -171,6 +189,8 @@ function adicionarContrato() {
     preview.textContent = v || 'sem nome ainda';
     preview.classList.toggle('vazio', !v);
   });
+
+  aplicarMascaraValor(clone.querySelector('.valor'));
 
   document.getElementById('lista').appendChild(clone);
   atualizarEmptyState();
