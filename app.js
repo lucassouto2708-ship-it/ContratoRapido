@@ -75,31 +75,32 @@ function dataParaIso(valor) {
 
 /* ---------- máscara de valor em reais (separador de milhar) ---------- */
 
-function formatarMascaraValor(digitos) {
-  digitos = digitos.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+function formatarInteiroComPontos(valor) {
+  const digitos = (valor || '').replace(/\D/g, '').replace(/^0+(?=\d)/, '');
   if (!digitos) return '';
-  const comPontos = digitos.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  return `${comPontos},00`;
+  return digitos.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+// Sempre garante "separador de milhar + ,00" no final, não importa o que o
+// usuário/planilha tenha digitado (com ou sem pontos, com ou sem vírgula).
+function normalizarValorFinal(valor) {
+  const texto = (valor || '').toString().trim();
+  if (!texto) return '';
+  const [parteInteira, parteDecimal] = texto.split(',');
+  const inteiroFormatado = formatarInteiroComPontos(parteInteira) || '0';
+  const decimais = (parteDecimal || '00').replace(/\D/g, '').padEnd(2, '0').slice(0, 2);
+  return `${inteiroFormatado},${decimais}`;
 }
 
 function aplicarMascaraValor(input) {
-  input.dataset.digitos = (input.value || '').replace(/\D/g, '');
-
-  input.addEventListener('input', (e) => {
-    const digitosAntes = input.dataset.digitos || '';
-    let digitos;
-
-    if (e.inputType && e.inputType.startsWith('delete')) {
-      digitos = digitosAntes.slice(0, -1);
-    } else if (e.data) {
-      digitos = digitosAntes + e.data.replace(/\D/g, '');
-    } else {
-      // fallback (colar, autocompletar, etc.): usa o que já está na tela
-      digitos = (input.value || '').replace(/\D/g, '');
-    }
-
-    input.dataset.digitos = digitos;
-    input.value = formatarMascaraValor(digitos);
+  // Enquanto digita: só agrupa milhar, sem vírgula — evita qualquer ambiguidade
+  // de cursor/tecla em diferentes navegadores e celulares.
+  input.addEventListener('input', () => {
+    input.value = formatarInteiroComPontos(input.value);
+  });
+  // Ao sair do campo: fecha o valor com ",00".
+  input.addEventListener('blur', () => {
+    input.value = normalizarValorFinal(input.value);
   });
 }
 
@@ -117,6 +118,7 @@ function slugifyNomeArquivo(texto) {
 
 function montarContexto(c) {
   const isoData = dataParaIso(c.data_assinatura);
+  const valorFinal = normalizarValorFinal(c.valor);
   return {
     contexto: {
       nome: (c.nome || '').trim(),
@@ -126,8 +128,8 @@ function montarContexto(c) {
       titulo_eleitor: (c.titulo_eleitor || '').trim(),
       endereco_contratado: (c.endereco_contratado || '').trim(),
       hora_servico: (c.hora_servico || '').trim(),
-      valor: (c.valor || '').trim(),
-      valor_extenso: formatarValorExtenso(c.valor),
+      valor: valorFinal,
+      valor_extenso: formatarValorExtenso(valorFinal),
       chave_pix: (c.chave_pix || '').trim(),
       banco: (c.banco || '').trim(),
       conta_corrente: (c.conta_corrente || '').trim(),
