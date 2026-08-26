@@ -78,16 +78,30 @@ function dataParaIso(valor) {
 function formatarMascaraValor(digitos) {
   digitos = digitos.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
   if (!digitos) return '';
-  digitos = digitos.padStart(3, '0');
-  const centavos = digitos.slice(-2);
-  const inteiro = digitos.slice(0, -2);
-  const inteiroComPontos = inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  return `${inteiroComPontos},${centavos}`;
+  const comPontos = digitos.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return `${comPontos},00`;
 }
 
 function aplicarMascaraValor(input) {
-  input.addEventListener('input', () => {
-    input.value = formatarMascaraValor(input.value);
+  input.dataset.digitos = (input.value || '').replace(/\D/g, '');
+
+  input.addEventListener('beforeinput', (e) => {
+    const tudoSelecionado = input.selectionStart === 0 && input.selectionEnd === input.value.length && input.value.length > 0;
+    const digitosAtual = tudoSelecionado ? '' : (input.dataset.digitos || '');
+    e.preventDefault();
+
+    let novo = digitosAtual;
+    if (e.inputType && e.inputType.startsWith('delete')) {
+      novo = digitosAtual.slice(0, -1);
+    } else if (e.inputType === 'insertFromPaste') {
+      const colado = (e.dataTransfer?.getData('text') || '').replace(/\D/g, '');
+      novo = digitosAtual + colado;
+    } else if (e.data) {
+      novo = digitosAtual + e.data.replace(/\D/g, '');
+    }
+
+    input.dataset.digitos = novo;
+    input.value = formatarMascaraValor(novo);
   });
 }
 
