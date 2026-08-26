@@ -85,23 +85,21 @@ function formatarMascaraValor(digitos) {
 function aplicarMascaraValor(input) {
   input.dataset.digitos = (input.value || '').replace(/\D/g, '');
 
-  input.addEventListener('beforeinput', (e) => {
-    const tudoSelecionado = input.selectionStart === 0 && input.selectionEnd === input.value.length && input.value.length > 0;
-    const digitosAtual = tudoSelecionado ? '' : (input.dataset.digitos || '');
-    e.preventDefault();
+  input.addEventListener('input', (e) => {
+    const digitosAntes = input.dataset.digitos || '';
+    let digitos;
 
-    let novo = digitosAtual;
     if (e.inputType && e.inputType.startsWith('delete')) {
-      novo = digitosAtual.slice(0, -1);
-    } else if (e.inputType === 'insertFromPaste') {
-      const colado = (e.dataTransfer?.getData('text') || '').replace(/\D/g, '');
-      novo = digitosAtual + colado;
+      digitos = digitosAntes.slice(0, -1);
     } else if (e.data) {
-      novo = digitosAtual + e.data.replace(/\D/g, '');
+      digitos = digitosAntes + e.data.replace(/\D/g, '');
+    } else {
+      // fallback (colar, autocompletar, etc.): usa o que já está na tela
+      digitos = (input.value || '').replace(/\D/g, '');
     }
 
-    input.dataset.digitos = novo;
-    input.value = formatarMascaraValor(novo);
+    input.dataset.digitos = digitos;
+    input.value = formatarMascaraValor(digitos);
   });
 }
 
